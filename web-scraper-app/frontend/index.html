@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-spider"></i>
+                <h1>Web Scraper Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button id="btn-scrape-now" class="btn btn-primary">
+                    <i class="fas fa-sync-alt"></i>
+                    Ejecutar Scraping
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stats Panel -->
+        <section class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-info">
+                    <h3 id="stat-total-products">0</h3>
+                    <p>Productos Monitoreados</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-globe"></i></div>
+                <div class="stat-info">
+                    <h3 id="stat-websites">0</h3>
+                    <p>Sitios Activos</p>
+                </div>
+            </div>
+            <div class="stat-card highlight">
+                <div class="stat-icon"><i class="fas fa-tags"></i></div>
+                <div class="stat-info">
+                    <h3 id="stat-high-discount">0</h3>
+                    <p>Descuento &gt;20%</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3 id="stat-last-scraping">--</h3>
+                    <p>Última Ejecución</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Products Section -->
+            <section class="products-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-shopping-cart"></i> Productos</h2>
+                    <div class="filters">
+                        <select id="filter-website" class="filter-select">
+                            <option value="">Todos los sitios</option>
+                        </select>
+                        <input type="text" id="filter-search" class="filter-input" placeholder="Buscar producto...">
+                        <select id="filter-sort" class="filter-select">
+                            <option value="last_scraped-desc">Más recientes</option>
+                            <option value="current_price-asc">Precio: menor a mayor</option>
+                            <option value="current_price-desc">Precio: mayor a menor</option>
+                            <option value="discount-desc">Mayor descuento</option>
+                            <option value="name-asc">Nombre A-Z</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Sitio</th>
+                                <th>Precio</th>
+                                <th>Descuento</th>
+                                <th>Actualizado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-tbody">
+                            <tr>
+                                <td colspan="6" class="loading-cell">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando productos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button id="btn-prev-page" class="btn btn-small" disabled>
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span id="page-info">Página 1 de 1</span>
+                    <button id="btn-next-page" class="btn btn-small" disabled>
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel -->
+            <aside class="right-panel">
+                <!-- Price Chart -->
+                <section class="chart-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Histórico de Precios</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="price-chart"></canvas>
+                        <p id="chart-placeholder" class="placeholder-text">
+                            <i class="fas fa-mouse-pointer"></i>
+                            Haz clic en un producto para ver su histórico de precios
+                        </p>
+                    </div>
+                    <div id="selected-product-info" class="selected-product-info hidden">
+                        <h4 id="selected-product-name">Producto seleccionado</h4>
+                        <p id="selected-product-price">$0</p>
+                    </div>
+                </section>
+
+                <!-- Logs Section -->
+                <section class="logs-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Últimos Logs</h2>
+                        <button id="btn-refresh-logs" class="btn btn-small btn-icon" title="Actualizar">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                    <div class="logs-container" id="logs-container">
+                        <div class="log-item loading">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando logs...
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Modal para detalles de producto -->
+    <div id="modal-product" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Detalles del Producto</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-product-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p>Ejecutando scraping...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
