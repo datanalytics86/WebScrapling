@@ -17,6 +17,7 @@ from ..models import Website, Product, PriceHistory, ScrapingLog
 from ..scrapers.base_scraper import BaseScraper, ScrapedProduct
 from ..scrapers.mercadolibre_scraper import MercadoLibreScraper
 from ..scrapers.falabella_scraper import FalabellaScraper
+from ..scrapers.bci_scraper import BciBenefitsScraper
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ class ScraperService:
     SCRAPER_CLASSES: Dict[str, Type[BaseScraper]] = {
         'MercadoLibreScraper': MercadoLibreScraper,
         'FalabellaScraper': FalabellaScraper,
+        'BciBenefitsScraper': BciBenefitsScraper,
     }
 
     def __init__(self, db: Session):
@@ -280,6 +282,13 @@ class ScraperService:
                 'scraper_class': 'FalabellaScraper',
                 'search_term': 'notebook',
                 'active': True
+            },
+            {
+                'name': 'BCI Beneficios Chile',
+                'base_url': 'https://www.bci.cl/beneficios',
+                'scraper_class': 'BciBenefitsScraper',
+                'search_term': 'beneficios',
+                'active': True
             }
         ]
 
@@ -306,4 +315,5 @@ class ScraperService:
         return {
             'MercadoLibreScraper': 'MercadoLibre Chile',
             'FalabellaScraper': 'Falabella Chile',
+            'BciBenefitsScraper': 'BCI Beneficios Chile',
         }
